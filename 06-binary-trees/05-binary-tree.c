@@ -81,7 +81,6 @@ void freeTree(Node *root) {
   freeTree(root->left);
   freeTree(root->right);
   free(root);
-  root = NULL;
 }
 
 void inorder(Node *root) {
