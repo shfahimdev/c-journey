@@ -27,7 +27,7 @@
 | 008 | Hash Tables | ✅ done |
 | 009 | Practice — Contact Book | ✅ done |
 | 010 | Processes & Signals | ✅ done |
-| 011 | Sockets I — TCP basics | ⬜ planned |
+| 011 | Sockets I — TCP basics |✅ done |
 | 012 | Sockets II — client/server | ⬜ planned |
 | 013 | String Parsing | ⬜ planned |
 | 014 | Concurrency I — pthreads | ⬜ planned |
@@ -41,55 +41,8 @@
 
 ---
 
-## Session 011 — Sockets I (TCP Basics)
-**Folder:** `10-sockets/`
-
-### What to cover
-- What a socket is — a file descriptor for network I/O
-- TCP vs UDP — connection-oriented vs fire-and-forget
-- IPv4 addresses and ports — `127.0.0.1:8080`
-- `socket()` — create a socket fd
-- `bind()` — attach it to an address and port
-- `listen()` — mark it as passive (waiting for connections)
-- `accept()` — block until a client connects, return a new fd
-- `read()` / `write()` on a socket — same as files
-- `close()` — close the fd
-
-### Key concepts
-```c
-// create socket
-int fd = socket(AF_INET, SOCK_STREAM, 0);
-
-// bind to port 8080
-struct sockaddr_in addr = {0};
-addr.sin_family      = AF_INET;
-addr.sin_port        = htons(8080);
-addr.sin_addr.s_addr = INADDR_ANY;
-bind(fd, (struct sockaddr *)&addr, sizeof(addr));
-
-// listen + accept
-listen(fd, 10);
-int client_fd = accept(fd, NULL, NULL);
-
-// talk to client
-read(client_fd, buffer, sizeof(buffer));
-write(client_fd, "hello\n", 6);
-close(client_fd);
-```
-
-### Exercises
-- `01-socket.c` — create a socket, bind, listen, accept one connection, print what client sent
-- `02-echo.c` — echo server: read from client, write it back
-- `03-client.c` — write a client that connects and sends a message
-- `04-curl.c` — server that responds to curl (send a valid string back, observe in terminal)
-
-### Why it matters for the HTTP server
-This is the literal foundation. Every HTTP connection starts with `accept()`. The request is `read()`. The response is `write()`. You'll use these 6 functions for the rest of the project.
-
----
-
 ## Session 012 — Sockets II (Client/Server)
-**Folder:** `10-sockets/` (continued)
+**Folder:** `012-sockets-2/`
 
 ### What to cover
 - `SO_REUSEADDR` — why your port gets stuck after a crash and how to fix it
@@ -128,7 +81,7 @@ while (total < expected) {
 ---
 
 ## Session 013 — String Parsing
-**Folder:** `11-parsing/`
+**Folder:** `013-parsing/`
 
 ### What to cover
 - `strtok` — split a string by delimiter (destructive)
@@ -170,7 +123,7 @@ The entire server logic is driven by parsing. You read bytes from the socket, th
 ---
 
 ## Session 014 — Concurrency I (pthreads)
-**Folder:** `12-threads/`
+**Folder:** `014-threads-1/`
 
 ### What to cover
 - What a thread is — shares memory with parent, unlike fork
@@ -211,7 +164,7 @@ This is what makes your server handle more than one client. Without threads (or 
 ---
 
 ## Session 015 — Concurrency II (Mutexes & Race Conditions)
-**Folder:** `12-threads/` (continued)
+**Folder:** `015-threads-2/`
 
 ### What to cover
 - Race condition — two threads read/modify the same variable, result is unpredictable
@@ -246,7 +199,7 @@ Your server will have at least one piece of shared state — probably a request 
 ---
 
 ## Session 016 — HTTP Server Phase 1 (Accept & Print)
-**Folder:** `13-http-server/`
+**Folder:** `016-http-server-1/`
 
 ### What to build
 A server that:
@@ -268,7 +221,7 @@ Before you respond to anything, you need to see what's actually arriving. This p
 ---
 
 ## Session 017 — HTTP Server Phase 2 (Hardcoded Response)
-**Folder:** `13-http-server/`
+**Folder:** `017-http-server-2/`
 
 ### What to build
 A server that:
@@ -295,7 +248,7 @@ curl -v http://localhost:8080
 ---
 
 ## Session 018 — HTTP Server Phase 3 (Serve Files from Disk)
-**Folder:** `13-http-server/`
+**Folder:** `018-http-server-3/`
 
 ### What to build
 A server that:
@@ -313,7 +266,7 @@ A server that:
 ---
 
 ## Session 019 — HTTP Server Phase 4 (Multithreaded)
-**Folder:** `13-http-server/`
+**Folder:** `019-http-server-4/`
 
 ### What to build
 - Spawn a thread per `accept()`
@@ -329,7 +282,7 @@ ab -n 500 -c 20 http://localhost:8080/index.html
 ---
 
 ## Session 020 — HTTP Server Phase 5 (Errors, Headers, MIME)
-**Folder:** `13-http-server/`
+**Folder:** `020-http-server-5/`
 
 ### What to build
 - Proper status codes: 200, 404, 400, 500
@@ -340,7 +293,7 @@ ab -n 500 -c 20 http://localhost:8080/index.html
 ---
 
 ## Session 021 — HTTP Server Phase 6 (Stress Test & Hardening)
-**Folder:** `13-http-server/`
+**Folder:** `021-http-server-6/`
 
 ### What to do
 - Hammer with `ab` at high concurrency — find where it breaks
