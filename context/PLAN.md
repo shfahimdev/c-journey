@@ -26,7 +26,7 @@
 | 007 | BST Deletion | ✅ done |
 | 008 | Hash Tables | ✅ done |
 | 009 | Practice — Contact Book | ✅ done |
-| 010 | Processes & Signals | ⬜ planned |
+| 010 | Processes & Signals | ✅ done |
 | 011 | Sockets I — TCP basics | ⬜ planned |
 | 012 | Sockets II — client/server | ⬜ planned |
 | 013 | String Parsing | ⬜ planned |
@@ -38,49 +38,6 @@
 | 019 | HTTP Server — Phase 4 (multithreaded) | ⬜ planned |
 | 020 | HTTP Server — Phase 5 (errors, headers, MIME) | ⬜ planned |
 | 021 | HTTP Server — Phase 6 (stress test & hardening) | ⬜ planned |
-
----
-
-## Session 010 — Processes & Signals
-**Folder:** `09-processes/`
-
-### What to cover
-- What a process is — PID, parent, child
-- `fork()` — duplicates the current process, returns twice
-- `exec()` — replaces the current process image with a new program
-- `waitpid()` — parent waits for a child to finish
-- `exit()` — terminates a process, sends status to parent
-- Signals — `SIGINT`, `SIGTERM`, `SIGCHLD`, `SIGKILL`
-- `signal()` / `sigaction()` — register a handler for a signal
-- Zombie processes — what happens when a child dies but parent doesn't `wait`
-
-### Key concepts
-```c
-pid_t pid = fork();
-if (pid == 0) {
-    // child process
-} else {
-    // parent process — pid holds child's PID
-}
-
-waitpid(pid, &status, 0);   // parent waits for child
-
-// signal handler
-void handler(int sig) {
-    printf("caught signal %d\n", sig);
-}
-signal(SIGINT, handler);    // Ctrl+C now calls handler
-```
-
-### Exercises
-- `01-fork.c` — fork, print PID in parent and child
-- `02-exec.c` — fork + exec to run another program
-- `03-waitpid.c` — parent waits, prints child exit status
-- `04-signals.c` — catch SIGINT, do cleanup before exit
-- `05-zombie.c` — create a zombie, then fix it with waitpid
-
-### Why it matters for the HTTP server
-The classic Unix server forks a child per connection. Parent keeps listening, child handles the request and exits. You can't write or understand that pattern without knowing fork/wait/signals cold.
 
 ---
 
@@ -271,7 +228,7 @@ int counter = 0;
 
 void *increment(void *arg) {
     pthread_mutex_lock(&lock);
-    counter++;                    // safe — only one thread here at a time
+    counter++;
     pthread_mutex_unlock(&lock);
     return NULL;
 }
@@ -335,9 +292,6 @@ curl -v http://localhost:8080
 # open http://localhost:8080 in browser
 ```
 
-### Why this phase
-Forces you to understand the exact structure of an HTTP response — status line, headers, blank line, body. Getting Content-Length wrong means the browser hangs. Getting `\r\n` wrong means nothing renders.
-
 ---
 
 ## Session 018 — HTTP Server Phase 3 (Serve Files from Disk)
@@ -356,13 +310,6 @@ A server that:
 - Binary files (images) — can't use text mode, must use `"rb"`
 - Large files — can't load the whole thing into one buffer, must send in chunks
 
-### Test with
-```bash
-curl http://localhost:8080/index.html
-curl http://localhost:8080/style.css
-curl http://localhost:8080/doesnotexist   # should return 404
-```
-
 ---
 
 ## Session 019 — HTTP Server Phase 4 (Multithreaded)
@@ -376,14 +323,8 @@ curl http://localhost:8080/doesnotexist   # should return 404
 
 ### Test with
 ```bash
-# ab = apache bench — N requests, C concurrent
 ab -n 500 -c 20 http://localhost:8080/index.html
 ```
-
-### Key challenges
-- Heap-allocate the fd before passing to thread — never pass a stack address
-- Make sure no shared state is accessed without a mutex
-- Detect file descriptor leaks under load with valgrind or lsof
 
 ---
 
@@ -392,17 +333,9 @@ ab -n 500 -c 20 http://localhost:8080/index.html
 
 ### What to build
 - Proper status codes: 200, 404, 400, 500
-- MIME type detection by file extension:
-  - `.html` → `text/html`
-  - `.css` → `text/css`
-  - `.js` → `application/javascript`
-  - `.png` → `image/png`
-  - `.jpg` → `image/jpeg`
+- MIME type detection by file extension
 - Custom error pages (404.html, 500.html)
 - `Server` header, `Date` header
-
-### Why this phase
-Without correct MIME types, browsers refuse to apply CSS or run JS. Without proper error pages, debugging is painful. This is what makes the server feel real.
 
 ---
 
@@ -412,13 +345,13 @@ Without correct MIME types, browsers refuse to apply CSS or run JS. Without prop
 ### What to do
 - Hammer with `ab` at high concurrency — find where it breaks
 - Run under valgrind — find any leaks under load
-- Test malformed requests — what happens with no headers, huge headers, binary garbage
-- Add request size limits — reject anything over N bytes
+- Test malformed requests
+- Add request size limits
 - Add basic logging — timestamp, method, path, status code, response time
 - Measure: requests/second, latency p50/p99
 
 ### Stretch goals (optional)
-- `epoll` — event-driven I/O, handle thousands of connections with one thread
+- `epoll` — event-driven I/O
 - Keep-alive — reuse the connection for multiple requests
 - TLS via OpenSSL — serve over HTTPS
 
@@ -428,4 +361,4 @@ Without correct MIME types, browsers refuse to apply CSS or run JS. Without prop
 - Compiler flags to use throughout: `gcc -Wall -Wextra -g -fsanitize=address`
 - Always run valgrind on final exercise of each session
 - Test tools: `curl -v`, `telnet`, `ab`, browser devtools network tab
-- Reference: `man 2 socket`, `man 2 accept`, `man 7 tcp` — man pages are your docs
+- Reference: `man 2 socket`, `man 2 accept`, `man 7 tcp`
