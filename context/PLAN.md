@@ -28,7 +28,7 @@
 | 009 | Practice — Contact Book | ✅ done |
 | 010 | Processes & Signals | ✅ done |
 | 011 | Sockets I — TCP basics |✅ done |
-| 012 | Sockets II — client/server | ⬜ planned |
+| 012 | Sockets II — client/server | ✅ done |
 | 013 | String Parsing | ⬜ planned |
 | 014 | Concurrency I — pthreads | ⬜ planned |
 | 015 | Concurrency II — mutexes & race conditions | ⬜ planned |
@@ -38,45 +38,6 @@
 | 019 | HTTP Server — Phase 4 (multithreaded) | ⬜ planned |
 | 020 | HTTP Server — Phase 5 (errors, headers, MIME) | ⬜ planned |
 | 021 | HTTP Server — Phase 6 (stress test & hardening) | ⬜ planned |
-
----
-
-## Session 012 — Sockets II (Client/Server)
-**Folder:** `012-sockets-2/`
-
-### What to cover
-- `SO_REUSEADDR` — why your port gets stuck after a crash and how to fix it
-- `htons` / `ntohs` — byte order (network is big-endian, x86 is little-endian)
-- `inet_pton` / `inet_ntop` — convert IP strings to binary and back
-- Handling partial reads — `read()` may not return everything at once
-- Handling `SIGPIPE` — writing to a closed socket crashes your server without this
-- Graceful shutdown — drain, close, cleanup
-
-### Key concepts
-```c
-// fix "address already in use" after crash
-int opt = 1;
-setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
-// ignore SIGPIPE — handle errors with return values instead
-signal(SIGPIPE, SIG_IGN);
-
-// partial read loop
-int total = 0;
-while (total < expected) {
-    int n = read(fd, buffer + total, expected - total);
-    if (n <= 0) break;
-    total += n;
-}
-```
-
-### Exercises
-- `05-reuseaddr.c` — add SO_REUSEADDR, crash and restart without waiting
-- `06-partial.c` — server that handles a client sending data in chunks
-- `07-shutdown.c` — clean shutdown on SIGINT, close all fds, free memory
-
-### Why it matters for the HTTP server
-`SO_REUSEADDR` alone will save you 20 minutes of debugging per session. Partial reads are a real production bug — HTTP headers can arrive in multiple packets. SIGPIPE will kill your server silently if you don't handle it.
 
 ---
 
